@@ -2,7 +2,7 @@ import { and, desc, eq, isNotNull, lte } from "drizzle-orm";
 import { getDb } from "@/db";
 import { posts } from "@/db/schema";
 
-export function getPublishedPosts() {
+export async function getPublishedPosts() {
   const publishedPosts = await getDb()
     .select({
       id: posts.id,
@@ -22,8 +22,8 @@ export function getPublishedPosts() {
   );
 }
 
-export function getPublishedSlugs() {
-  return getDb()
+export async function getPublishedSlugs() {
+  return await getDb()
     .select({ slug: posts.slug })
     .from(posts)
     .where(
@@ -52,5 +52,8 @@ export async function getPublishedPostBySlug(slug: string) {
     )
     .limit(1);
 
-  return post?.publishedAt ? post : undefined;
+  if (!post?.publishedAt) return undefined;
+
+  const { publishedAt, ...rest } = post;
+  return { ...rest, publishedAt };
 }

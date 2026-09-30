@@ -13,3 +13,6 @@ Rules:
 - No new dependencies without justification in the PR description
 - Run npm run lint and npm run build before finishing; fix all errors
 - Minimal, clean design — Tailwind only, no UI component libraries
+- Database schema is managed exclusively through Drizzle migrations in drizzle/ — never modify the database directly
+- The neon CLI/MCP manages Neon infrastructure only (branches, connection config) — never use it to create/modify tables or data
+- DATABASE_URL comes from .env.local (never commit it). If it's missing, stop and tell me — do not code around it
