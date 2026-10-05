@@ -9,7 +9,7 @@ import { getPublishedPostBySlug, getPublishedSlugs } from "@/lib/posts";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
