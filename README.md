@@ -21,6 +21,30 @@ The theme picker offers System, Default, Dark, Sepia, and Custom. System follows
 
 To test the themes, use the header picker to select each preset, change the Custom background color, reload to check persistence, and choose System (or clear the saved theme) to verify the operating-system preference is followed. Check keyboard navigation and visible focus indicators while testing.
 
+## Admin sign-in
+
+Admin access uses Auth.js with JWT sessions and GitHub/Google OAuth. No auth database tables or adapter are used. Configure these values in `.env.local` for local development and in the Vercel project environment for production:
+
+- `AUTH_SECRET`: a private random signing secret (generate one with `openssl rand -base64 32`).
+- `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET`: the GitHub OAuth app client ID and secret.
+- `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`: the Google OAuth client ID and secret.
+- `ADMIN_EMAILS`: comma-separated allowed email addresses; matching is case-insensitive.
+- `NEXTAUTH_URL`: `http://localhost:3000` locally and `https://blog-app-rust-seven-88.vercel.app` in production.
+
+Create a GitHub OAuth app under **Settings → Developer settings → OAuth Apps**. GitHub OAuth apps have one callback URL each, so create one app for local development and another for production. Set each app's homepage and callback URL to the matching environment:
+
+- Local homepage: `http://localhost:3000`; callback: `http://localhost:3000/api/auth/callback/github`
+- Production homepage: `https://blog-app-rust-seven-88.vercel.app`; callback: `https://blog-app-rust-seven-88.vercel.app/api/auth/callback/github`
+
+Set the matching app's client ID and secret in each environment. The app requests `user:email` and verifies the primary GitHub email through GitHub's authenticated email API before allowing access.
+
+Create Google OAuth credentials in Google Cloud Console under **APIs & Services → Credentials** as OAuth client IDs for Web applications. Add the appropriate local and production origins and authorized redirect URIs:
+
+- Local: `http://localhost:3000/api/auth/callback/google`
+- Production: `https://blog-app-rust-seven-88.vercel.app/api/auth/callback/google`
+
+Add only trusted email addresses to `ADMIN_EMAILS`. Google sign-in requires Google's `email_verified` claim. In production, authentication fails with a clear configuration error if `AUTH_SECRET` or a non-empty `ADMIN_EMAILS` is missing.
+
 ## Database commands
 
 - `npm run db:generate` creates a readable SQL migration from `src/db/schema.ts`.

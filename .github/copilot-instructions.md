@@ -5,6 +5,7 @@ Project: personal blog — Next.js (App Router) + TypeScript strict + Tailwind +
 - Work on a branch per task; never push to main directly; open a PR when done.
 - Server components by default; use `"use client"` only when necessary.
 - No API routes unless asked — fetch data in server components. RSS at `/feed.xml` is the only permitted route handler.
+- Auth.js needs `app/api/auth/[...nextauth]/route.ts`; this is the second allowed route handler besides `/feed.xml`. Admin pages and server actions must check the session on the server.
 - Use ISR (`revalidate`) for blog pages.
 - Generate Drizzle migrations as readable SQL files; clearly show any migration in the PR description.
 - No new dependencies without justification in the PR description.
