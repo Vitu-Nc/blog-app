@@ -47,6 +47,12 @@ Add only trusted email addresses to `ADMIN_EMAILS`. Google sign-in requires Goog
 
 Apply the new checked-in user/role migration with `npm run db:migrate` when ready. This migration adds the user table and nullable post-author reference; it does not run automatically during sign-in.
 
+## Admin post management
+
+Authors can manage only their own posts; admins can manage all posts. A slug becomes read-only once a post is scheduled or published and remains locked if the post is later changed back to a draft. Scheduling locks the slug immediately, before the scheduled time. Publish dates are interpreted in the browser's local timezone and submitted as ISO timestamps.
+
+The post-management schema addition is in [`drizzle/0002_great_puck.sql`](./drizzle/0002_great_puck.sql). Apply migrations manually when ready; the app does not run migrations or seeds.
+
 ## Database commands
 
 - `npm run db:generate` creates a readable SQL migration from `src/db/schema.ts`.

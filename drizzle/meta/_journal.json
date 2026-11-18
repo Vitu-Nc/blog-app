@@ -15,6 +15,13 @@
       "when": 1794951600000,
       "tag": "0001_users-and-roles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795032038394,
+      "tag": "0002_great_puck",
+      "breakpoints": true
     }
   ]
 }

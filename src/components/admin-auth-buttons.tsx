@@ -30,7 +30,7 @@ export function AdminSignOutButton() {
   return (
     <button
       type="button"
-      className="bg-fg text-bg rounded-md px-4 py-2 font-medium hover:opacity-80"
+      className="bg-fg text-bg min-h-12 rounded-md px-4 py-3 font-medium hover:opacity-80"
       onClick={() => void signOut({ callbackUrl: "/admin/login" })}
     >
       Sign out

@@ -1,0 +1,1 @@
+ALTER TABLE "posts" ADD COLUMN "first_published_at" timestamp with time zone;
