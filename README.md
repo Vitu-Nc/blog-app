@@ -23,7 +23,7 @@ To test the themes, use the header picker to select each preset, change the Cust
 
 ## Admin sign-in
 
-Admin access uses Auth.js with JWT sessions and GitHub/Google OAuth. No auth database tables or adapter are used. Configure these values in `.env.local` for local development and in the Vercel project environment for production:
+Sign-in uses Auth.js with JWT sessions and GitHub/Google OAuth. Verified provider accounts are stored as users with the author role by default; addresses in `ADMIN_EMAILS` are granted the admin role. Roles and account status are read from PostgreSQL for every authorization check, not from the JWT. Configure these values in `.env.local` for local development and in the Vercel project environment for production:
 
 - `AUTH_SECRET`: a private random signing secret (generate one with `openssl rand -base64 32`).
 - `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET`: the GitHub OAuth app client ID and secret.
@@ -43,7 +43,9 @@ Create Google OAuth credentials in Google Cloud Console under **APIs & Services 
 - Local: `http://localhost:3000/api/auth/callback/google`
 - Production: `https://blog-app-rust-seven-88.vercel.app/api/auth/callback/google`
 
-Add only trusted email addresses to `ADMIN_EMAILS`. Google sign-in requires Google's `email_verified` claim. In production, authentication fails with a clear configuration error if `AUTH_SECRET` or a non-empty `ADMIN_EMAILS` is missing.
+Add only trusted email addresses to `ADMIN_EMAILS`. Google sign-in requires Google's `email_verified` claim, and GitHub sign-in requires a verified primary email. Emails are stored lowercase. User slugs are generated from display names, made unique with numeric suffixes, and avoid reserved routes. On an admin's first active sign-in, existing posts without an author are assigned to that admin. In production, authentication fails with a clear configuration error if `AUTH_SECRET` or a non-empty `ADMIN_EMAILS` is missing.
+
+Apply the new checked-in user/role migration with `npm run db:migrate` when ready. This migration adds the user table and nullable post-author reference; it does not run automatically during sign-in.
 
 ## Database commands
 
@@ -51,7 +53,7 @@ Add only trusted email addresses to `ADMIN_EMAILS`. Google sign-in requires Goog
 - `npm run db:migrate` applies pending migrations.
 - `npm run db:seed` inserts three sample posts; rerunning it does not duplicate existing slugs.
 
-The initial migration is in [`drizzle/0000_initial_posts.sql`](./drizzle/0000_initial_posts.sql).
+The initial migration is in [`drizzle/0000_initial-posts.sql`](./drizzle/0000_initial-posts.sql); the user/role migration is in [`drizzle/0001_users-and-roles.sql`](./drizzle/0001_users-and-roles.sql).
 
 ## Validation
 

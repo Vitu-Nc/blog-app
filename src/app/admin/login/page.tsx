@@ -17,7 +17,8 @@ export default function AdminLoginPage() {
     >
       <h1 className="text-fg font-serif text-4xl">Admin sign in</h1>
       <p className="text-muted mt-4">
-        Sign in with an account that has been added to the admin allowlist.
+        Sign in with a verified Google or GitHub account. Admin access is
+        limited to addresses on the admin allowlist.
       </p>
       <div className="mt-8">
         <AdminSignInButtons />

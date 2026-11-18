@@ -1,6 +1,7 @@
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import type { NextAuthOptions } from "next-auth";
+import { provisionVerifiedUser } from "@/lib/user-provisioning";
 
 function getAdminAllowlist() {
   const configuredEmails = process.env.ADMIN_EMAILS;
@@ -36,10 +37,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-async function getAllowlistedGitHubEmail(
-  accessToken: string,
-  adminEmails: Set<string>,
-) {
+async function getVerifiedGitHubEmail(accessToken: string) {
   const response = await fetch("https://api.github.com/user/emails", {
     headers: {
       Accept: "application/vnd.github+json",
@@ -64,8 +62,7 @@ async function getAllowlistedGitHubEmail(
       isRecord(entry) &&
       entry.primary === true &&
       entry.verified === true &&
-      typeof entry.email === "string" &&
-      adminEmails.has(entry.email.trim().toLowerCase()),
+      typeof entry.email === "string",
   );
 
   return isRecord(verifiedEmail) && typeof verifiedEmail.email === "string"
@@ -73,8 +70,18 @@ async function getAllowlistedGitHubEmail(
     : null;
 }
 
-export function isAdminEmail(email: string) {
-  return getAdminAllowlist().has(email.trim().toLowerCase());
+function getDisplayName(profile: unknown, fallback: string) {
+  const candidates = [
+    isRecord(profile) ? profile.name : undefined,
+    isRecord(profile) ? profile.login : undefined,
+  ];
+
+  const name = candidates.find(
+    (candidate): candidate is string =>
+      typeof candidate === "string" && candidate.trim().length > 0,
+  );
+
+  return name?.trim() || fallback.split("@", 1)[0] || "Author";
 }
 
 export function getAuthOptions(): NextAuthOptions {
@@ -109,36 +116,48 @@ export function getAuthOptions(): NextAuthOptions {
           return false;
         }
 
+        let email: string | null = null;
+
         if (account.provider === "google") {
-          const email =
+          const verifiedEmail =
             isRecord(profile) &&
             profile.email_verified === true &&
             typeof profile.email === "string" &&
             profile.email.trim().toLowerCase();
 
-          if (!email || !adminEmails.has(email)) {
+          if (!verifiedEmail) {
             return false;
           }
 
-          user.email = email;
-          return true;
+          email = verifiedEmail;
         }
 
         if (account.provider === "github" && account.access_token) {
-          const email = await getAllowlistedGitHubEmail(
-            account.access_token,
-            adminEmails,
-          );
-
+          email = await getVerifiedGitHubEmail(account.access_token);
           if (!email) {
             return false;
           }
-
-          user.email = email;
-          return true;
         }
 
-        return false;
+        if (!email) {
+          return false;
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        let signedInUser: Awaited<ReturnType<typeof provisionVerifiedUser>>;
+
+        try {
+          signedInUser = await provisionVerifiedUser({
+            email: normalizedEmail,
+            displayName: getDisplayName(profile, user.name ?? normalizedEmail),
+            isAdmin: adminEmails.has(normalizedEmail),
+          });
+        } catch {
+          throw new Error("Sign-in could not be completed.");
+        }
+
+        user.email = normalizedEmail;
+        return signedInUser.status === "active";
       },
     },
   };
