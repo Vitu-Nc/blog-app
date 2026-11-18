@@ -54,6 +54,10 @@ export const posts = pgTable("posts", {
   authorId: uuid("author_id").references(() => users.id, {
     onDelete: "set null",
   }),
+  firstPublishedAt: timestamp("first_published_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
   publishedAt: timestamp("published_at", { withTimezone: true, mode: "date" }),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .notNull()
